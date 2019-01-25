@@ -92,10 +92,9 @@ class ContentProvider(object):
         st = self._stream()
         for l in next(st):
             yield l.rstrip("\n")
-        st.send(None)
 
     def _stream(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @property
     def path(self):
@@ -130,10 +129,16 @@ class DatasourceProvider(ContentProvider):
     def __init__(self, content, relative_path, root='/', ds=None, ctx=None):
         super(DatasourceProvider, self).__init__()
         self.relative_path = relative_path
-        self._content = content
+        self._content = content if isinstance(content, list) else content.splitlines()
         self.root = root
         self.ds = ds
         self.ctx = ctx
+
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        yield self._content
 
 
 class FileProvider(ContentProvider):
